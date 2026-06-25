@@ -45,7 +45,7 @@ jobs:
       # --------------------------------------------------
       # (1) RUN NOTEBOOK 01
       # --------------------------------------------------
-      - name: Run 01 - Daily Yahoo Scanner
+      - name: Run 05 - Trend
         run: |
           papermill "05-trend_stocks.ipynb" \
             "output/05-trend_stocks$(date +'%Y%m%d_%H%M').ipynb"

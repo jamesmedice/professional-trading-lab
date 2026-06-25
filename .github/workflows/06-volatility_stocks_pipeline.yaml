@@ -46,7 +46,7 @@ jobs:
       # --------------------------------------------------
       # (1) RUN NOTEBOOK 01
       # --------------------------------------------------
-      - name: Run 01 - Daily Yahoo Scanner
+      - name: Run 06 - Volatility
         run: |
           papermill "06-volatility_stocks.ipynb" \
             "output/06-volatility_stocks$(date +'%Y%m%d_%H%M').ipynb"

@@ -50,7 +50,7 @@ jobs:
       # --------------------------------------------------
       # (1) RUN NOTEBOOK 01
       # --------------------------------------------------
-      - name: Run 02 - Average Hot Stocks Scanner
+      - name: Run 03 - Recomendations
         run: |
           papermill "03-recommendations_stocks.ipynb" \
             "output/03-recommendations_stocks$(date +'%Y%m%d_%H%M').ipynb"
