@@ -1,6 +1,9 @@
 name: 03 RECOMENDATIONS STOCKS PIPELINE
 
 on:
+  push:
+    branches:
+      - master
   schedule:
     - cron: "45 15-22 * * 1-5"
   workflow_dispatch:

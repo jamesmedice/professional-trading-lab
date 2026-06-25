@@ -1,6 +1,9 @@
 name: 04 RUNTIME STOCKS PIPELINE
 
 on:
+  push:
+    branches:
+      - master
   schedule:
     - cron: "*/12 15-22 * * 1-5"
   workflow_dispatch:
