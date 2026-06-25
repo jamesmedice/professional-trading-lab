@@ -1,0 +1,67 @@
+# scripts/upload_to_firebase.py
+import os
+import json
+import glob
+from pathlib import Path
+import firebase_admin
+from firebase_admin import credentials, storage
+
+def init_bucket():
+    raw = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
+    if not raw:
+        raise RuntimeError("FIREBASE_SERVICE_ACCOUNT empty")
+    cred_info = json.loads(raw)
+    cred = credentials.Certificate(cred_info)
+    firebase_admin.initialize_app(cred, {"storageBucket":"tpmedici.appspot.com"})
+    return storage.bucket()
+
+def upload_folder_local(bucket, local_folder, remote_prefix="trade/"):
+    local_folder = Path(local_folder)
+    if not local_folder.exists():
+        print(f"Skip, folder not found: {local_folder}")
+        return
+
+    # Allowed upload extensions
+    allowed_ext = {".png", ".html"}   # ← upload only these
+
+    for f in local_folder.glob("**/*"):
+        if not f.is_file():
+            continue
+
+        # Skip unwanted files
+        if f.suffix.lower() not in allowed_ext:
+            # Uncomment to log skipped files:
+            # print(f"Skipping {f} (extension not allowed)")
+            continue
+
+        rel = f.relative_to(local_folder)
+        remote_path = f"{remote_prefix}{local_folder.name}/{rel.as_posix()}"
+        blob = bucket.blob(remote_path)
+        blob.upload_from_filename(str(f))
+        print(f"Uploaded {f} -> {remote_path}")
+
+def upload_folder_local_withCSV(bucket, local_folder, remote_prefix="trade/"):
+    local_folder = Path(local_folder)
+    if not local_folder.exists():
+        print(f"Skip, folder not found: {local_folder}")
+        return
+
+    # Allowed upload extensions
+    allowed_ext = {".png", ".csv", ".html"}   # ← upload only these
+
+    for f in local_folder.glob("**/*"):
+        if not f.is_file():
+            continue
+
+        # Skip unwanted files
+        if f.suffix.lower() not in allowed_ext:
+            # Uncomment to log skipped files:
+            # print(f"Skipping {f} (extension not allowed)")
+            continue
+
+        rel = f.relative_to(local_folder)
+        remote_path = f"{remote_prefix}{local_folder.name}/{rel.as_posix()}"
+        blob = bucket.blob(remote_path)
+        blob.upload_from_filename(str(f))
+        print(f"Uploaded {f} -> {remote_path}")
+ 

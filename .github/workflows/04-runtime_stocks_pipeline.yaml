@@ -1,0 +1,84 @@
+name: 04 RUNTIME STOCKS PIPELINE
+
+on:
+  schedule:
+    - cron: "*/12 15-22 * * 1-5"
+  workflow_dispatch:
+    
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install jupyter ipykernel papermill firebase-admin
+
+      - name: Install kernel
+        run: python -m ipykernel install --user --name python3
+
+      # --------------------------------------------------
+      # 🔥 CRITICAL FIX — Create all folders notebooks use
+      # --------------------------------------------------
+      - name: Create required folders
+        run: |
+          mkdir -p data        
+          mkdir -p data/daily
+          mkdir -p data/runtime
+          mkdir -p data/averages
+          mkdir -p output
+          mkdir -p output/runtime          
+          
+      # --------------------------------------------------
+      # (1) RUN NOTEBOOK 01
+      # --------------------------------------------------
+      - name: Run 01 - Daily Yahoo Scanner
+        run: |
+          papermill "04-runtime_stocks.ipynb" \
+            "output/04-runtime_stocks$(date +'%Y%m%d_%H%M').ipynb"
+
+      # --------------------------------------------------
+      # Upload to Firebase
+      # --------------------------------------------------
+      - name: Upload Firebase Data
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python scripts/upload_04.py
+
+      # --------------------------------------------------
+      # Artifacts (optional)
+      # --------------------------------------------------
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-pipeline-runs
+          path: output/
+
+                # --------------------------------------------------
+      # COMMIT OUTPUTS BACK TO GITHUB
+      # --------------------------------------------------
+      - name: Commit updated output & data folders
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "jamesmedice"
+          git config user.email "tiago.sllater@github.com"
+
+          # Add anything produced by the notebooks
+          git add data/ || true
+          git commit -m "Update pipeline output [skip ci]" || true
+          
+          git pull --rebase || true
+          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} HEAD:${{ github.ref }} || true

@@ -1,0 +1,12 @@
+pandas
+numpy
+matplotlib
+plotly
+requests
+yfinance
+ipywidgets
+jupyterlab_widgets
+beautifulsoup4
+joblib
+tqdm
+firebase_admin

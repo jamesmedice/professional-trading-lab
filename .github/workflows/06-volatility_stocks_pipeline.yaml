@@ -1,0 +1,57 @@
+name: 06 VOLATILITY STOCKS PIPELINE
+
+on:
+  schedule:
+    - cron: "*/15 16-22 * * 1-5"
+  workflow_dispatch:
+    
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install jupyter ipykernel papermill firebase-admin
+
+      - name: Install kernel
+        run: python -m ipykernel install --user --name python3
+
+      # --------------------------------------------------
+      # 🔥 CRITICAL FIX — Create all folders notebooks use
+      # --------------------------------------------------
+      - name: Create required folders
+        run: |
+          mkdir -p data        
+          mkdir -p data/hotscore
+          mkdir -p output
+          mkdir -p output/volatility
+          
+          
+      # --------------------------------------------------
+      # (1) RUN NOTEBOOK 01
+      # --------------------------------------------------
+      - name: Run 01 - Daily Yahoo Scanner
+        run: |
+          papermill "06-volatility_stocks.ipynb" \
+            "output/06-volatility_stocks$(date +'%Y%m%d_%H%M').ipynb"
+
+      # --------------------------------------------------
+      # Upload to Firebase
+      # --------------------------------------------------
+      - name: Upload Firebase Data
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: python scripts/upload_06.py
