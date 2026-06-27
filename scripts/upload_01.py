@@ -9,4 +9,4 @@ import upload_to_firebase
 from upload_to_firebase import init_bucket, upload_folder_local
 
 bucket = init_bucket()
-upload_folder_local(bucket, "output/top", remote_prefix="trade")
+upload_folder_local(bucket, "output/top", remote_prefix="trade/")
